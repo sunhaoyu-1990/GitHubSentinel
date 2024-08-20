@@ -9,7 +9,7 @@ class ReportGenerator:
 
     def export_daily_progress(self, repo, updates):
         file_path = f'daily_progress/{repo.replace("/", "_")}_{date.today()}.md'
-        with open(file_path, 'w') as file:
+        with open(file_path, 'w', encoding='utf-8') as file:
             file.write(f"# Daily Progress for {repo} ({date.today()})\n\n")
             file.write("## Commits\n")
             for commit in updates['commits']:
@@ -23,7 +23,7 @@ class ReportGenerator:
         return file_path
 
     def generate_daily_report(self, markdown_file_path):
-        with open(markdown_file_path, 'r') as file:
+        with open(markdown_file_path, 'r', encoding='utf-8') as file:
             markdown_content = file.read()
 
         report = self.llm.generate_daily_report(markdown_content)
