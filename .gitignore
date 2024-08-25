@@ -163,4 +163,7 @@ cython_debug/
 
 # User-defined
 daily_progress/*
- 
+src/jupyter/*.md
+src/jupyter/daily_progress/*
+
+config.json
