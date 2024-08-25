@@ -10,8 +10,6 @@ class LLM:
         # 从TXT文件加载提示信息
         with open("prompts/report_prompt.txt", "r", encoding='utf-8') as file:
             self.system_prompt = file.read()
-        # 配置日志文件，当文件大小达到1MB时自动轮转，日志级别为DEBUG
-        LOG.add("logs/llm_logs.log", rotation="1 MB", level="DEBUG")
 
     def generate_daily_report(self, markdown_content, dry_run=False):
         prompt = f"以下是项目的最新进展，根据功能合并同类项，形成一份简报，至少包含：1）新增功能；2）主要改进；3）修复问题；:\n\n{markdown_content}"
@@ -20,12 +18,13 @@ class LLM:
             # 如果启用了dry_run模式，将不会调用模型，而是将提示信息保存到文件中
             LOG.info("Dry run mode enabled. Saving prompt to file.")
             with open("daily_progress/prompt.txt", "w+") as f:
-                f.write(prompt)
+                # 格式化JSON字符串的保存
+                json.dump(messages, f, indent=4, ensure_ascii=False)
             LOG.debug("Prompt saved to daily_progress/prompt.txt")
             return "DRY RUN"
 
         # 日志记录开始生成报告
-        LOG.info("Starting report generation using GPT model.")
+        LOG.info("使用 GPT 模型开始生成报告。")
         
         try:
             # 调用OpenAI GPT模型生成报告
@@ -40,5 +39,5 @@ class LLM:
             return response.choices[0].message.content
         except Exception as e:
             # 如果在请求过程中出现异常，记录错误并抛出
-            LOG.error("An error occurred while generating the report: {}", e)
+            LOG.error(f"生成报告时发生错误：{e}")
             raise

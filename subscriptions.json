@@ -1,6 +1,5 @@
 [
-    "ollama/ollama",
     "langchain-ai/langchain",
-    "DjangoPeng/GitHubSentinel",
-    "DjangoPeng/agent-hub"
+    "DjangoPeng/openai-quickstart",
+    "ollama/ollama"
 ]

@@ -165,5 +165,6 @@ cython_debug/
 daily_progress/*
 src/jupyter/*.md
 src/jupyter/daily_progress/*
+run/*
 
 config.json
