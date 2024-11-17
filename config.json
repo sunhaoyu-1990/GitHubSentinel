@@ -21,7 +21,8 @@
     "report_types": [
         "github",
         "hacker_news_hours_topic",
-        "hacker_news_daily_report"
+        "hacker_news_daily_report",
+        "douban_new_book"
     ],
     "slack": {
         "webhook_url": "your_slack_webhook_url"

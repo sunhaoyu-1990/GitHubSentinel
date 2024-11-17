@@ -76,6 +76,26 @@ class ReportGenerator:
         LOG.info(f"Hacker News 每日汇总报告已保存到 {report_file_path}")
         return report, report_file_path
 
+    def generate_douban_book_report(self, markdown_file_path, care_thing):
+        """
+        生成豆瓣新书的报告，并保存为 {original_filename}_report.md。
+        """
+        with open(markdown_file_path, 'r', encoding='utf-8') as file:
+            markdown_content = file.read()
+
+        # 在生成报告之前，将关注的内容插入到 markdown_content 的最后面
+        markdown_content = markdown_content.strip() + "\n\n" + care_thing
+
+        system_prompt = self.prompts.get("douban_new_book")
+        report = self.llm.generate_report(system_prompt, markdown_content)
+        
+        report_file_path = os.path.splitext(markdown_file_path)[0] + "_report.md"
+        with open(report_file_path, 'w+') as report_file:
+            report_file.write(report)
+
+        LOG.info(f"豆瓣新书报告已保存到 {report_file_path}")
+        return report, report_file_path
+
 
     def _aggregate_topic_reports(self, directory_path):
         """
@@ -98,8 +118,10 @@ if __name__ == '__main__':
     report_generator = ReportGenerator(llm, config.report_types)
 
     # hn_hours_file = "./hacker_news/2024-09-01/14.md"
-    hn_daily_dir = "./hacker_news/2024-09-01/"
+    new_book_dir = "./douban_new_book/2024-11-17.md"
+
+    care_thing = '**关注内容**：我比较关注有关欧洲国家的书籍'
 
     # report, report_file_path = report_generator.generate_hn_topic_report(hn_hours_file)
-    report, report_file_path = report_generator.generate_hn_daily_report(hn_daily_dir)
+    report, report_file_path = report_generator.generate_douban_book_report(new_book_dir, care_thing)
     LOG.debug(report)

@@ -27,8 +27,12 @@ class Config:
             self.ollama_api_url = llm_config.get('ollama_api_url', 'http://localhost:11434/api/chat')
             
             # 加载报告类型配置
-            self.report_types = config.get('report_types', ["github", "hacker_news"])  # 默认报告类型
+            self.report_types = config.get('report_types', ["github", "hacker_news", "douban_new_book"])  # 默认报告类型
             
             # 加载 Slack 配置
             slack_config = config.get('slack', {})
             self.slack_webhook_url = slack_config.get('webhook_url')
+
+            # 加载豆瓣的新书和热门书籍简报配置
+            self.book_type = ['历史文化']
+            self.care_thing = '欧洲各国的历史文化'

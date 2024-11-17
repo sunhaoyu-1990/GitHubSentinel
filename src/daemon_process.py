@@ -8,6 +8,7 @@ from datetime import datetime  # 导入 datetime 模块用于获取当前日期
 from config import Config  # 导入配置管理类
 from github_client import GitHubClient  # 导入GitHub客户端类，处理GitHub API请求
 from hacker_news_client import HackerNewsClient
+from douban_new_book_client import DoubanBookScraper
 from notifier import Notifier  # 导入通知器类，用于发送通知
 from report_generator import ReportGenerator  # 导入报告生成器类
 from llm import LLM  # 导入语言模型类，可能用于生成报告内容
@@ -46,9 +47,20 @@ def hn_daily_job(hacker_news_client, report_generator, notifier):
     date = datetime.now().strftime('%Y-%m-%d')
     # 生成每日汇总报告的目录路径
     directory_path = os.path.join('hacker_news', date)
+    markdown_file_path = hacker_news_client.export_top_stories()
     # 生成每日汇总报告并保存
     report, _ = report_generator.generate_hn_daily_report(directory_path)
     notifier.notify_hn_report(date, report)
+    LOG.info(f"[定时任务执行完毕]")
+
+def douban_book_job(douban_new_book, report_generator, notifier, book_type=['历史文化'], care_thing=''):
+    LOG.info("[开始执行定时任务]豆瓣新书和热门书籍简报获取")
+    date = datetime.now().strftime('%Y-%m-%d')
+    douban_new_book.keywords = book_type
+    directory_path = douban_new_book.run()
+    # 生成每日汇总报告并保存
+    report, _ = report_generator.generate_douban_book_report(directory_path, care_thing)
+    notifier.notify_douban_book_report(date, report)
     LOG.info(f"[定时任务执行完毕]")
 
 
@@ -59,6 +71,7 @@ def main():
     config = Config()  # 创建配置实例
     github_client = GitHubClient(config.github_token)  # 创建GitHub客户端实例
     hacker_news_client = HackerNewsClient() # 创建 Hacker News 客户端实例
+    douban_new_book = DoubanBookScraper()
     notifier = Notifier(config.email)  # 创建通知器实例
     llm = LLM(config)  # 创建语言模型实例
     report_generator = ReportGenerator(llm, config.report_types)  # 创建报告生成器实例
@@ -66,18 +79,22 @@ def main():
 
     # 启动时立即执行（如不需要可注释）
     # github_job(subscription_manager, github_client, report_generator, notifier, config.freq_days)
-    hn_daily_job(hacker_news_client, report_generator, notifier)
+    # hn_daily_job(hacker_news_client, report_generator, notifier)
+    douban_book_job(douban_new_book, report_generator, notifier, config.book_type, config.care_thing)
 
     # 安排 GitHub 的定时任务
-    schedule.every(config.freq_days).days.at(
-        config.exec_time
-    ).do(github_job, subscription_manager, github_client, report_generator, notifier, config.freq_days)
+    # schedule.every(config.freq_days).days.at(
+    #     config.exec_time
+    # ).do(github_job, subscription_manager, github_client, report_generator, notifier, config.freq_days)
     
     # 安排 hn_topic_job 每4小时执行一次，从0点开始
-    schedule.every(4).hours.at(":00").do(hn_topic_job, hacker_news_client, report_generator)
+    # schedule.every(4).hours.at(":00").do(hn_topic_job, hacker_news_client, report_generator)
 
     # 安排 hn_daily_job 每天早上10点执行一次
-    schedule.every().day.at("10:00").do(hn_daily_job, hacker_news_client, report_generator, notifier)
+    # schedule.every().day.at("10:00").do(hn_daily_job, hacker_news_client, report_generator, notifier)
+
+    # 安排 douban_book_job 每天早上9点执行一次
+    schedule.every().day.at("09:00").do(douban_book_job, douban_new_book, report_generator, notifier, config.book_type, config.care_thing)
 
     try:
         # 在守护进程中持续运行

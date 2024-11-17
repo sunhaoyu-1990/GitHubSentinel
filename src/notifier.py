@@ -31,6 +31,18 @@ class Notifier:
             self.send_email(subject, report)
         else:
             LOG.warning("邮件设置未配置正确，无法发送 Hacker News 报告通知")
+
+    def notify_douban_book_report(self, date, report):
+        """
+        发送豆瓣新书和热门书籍简报邮件
+        :param date: 报告日期
+        :param report: 报告内容
+        """
+        if self.email_settings:
+            subject = f"[Douban] {date} 新书和热门书籍简报"
+            self.send_email(subject, report)
+        else:
+            LOG.warning("邮件设置未配置正确，无法发送豆瓣书籍报告通知")
     
     def send_email(self, subject, report):
         LOG.info(f"准备发送邮件:{subject}")
